@@ -24,16 +24,16 @@ Limitations:
 
 ### Installation
 
-Install using SillyTavern's third party extensions installer using this link:
+Install using SillyTavern's third-party extensions installer using this link:
 
 `https://github.com/Cohee1207/SillyTavern-EmulatorJS`
 
 ### Usage
 
-- Open "EmulatorJS" extension menu.
+- Open the "EmulatorJS" extension menu.
 - Click "Add ROM file".
 - Select the game file to add. Input the name and core (if it wasn't auto-detected).
-- Click "Play" button in the list or launch via the wand menu.
+- Click the "Play" button in the list or launch via the wand menu.
 
 ## Prerequisites
 
