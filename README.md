@@ -1,15 +1,66 @@
+# SillyTavern-EmulatorJS
+
+Allows to play retro console games right from the SillyTavern chat.
+
+## Features
+
+Cool stuff:
+
+- Unnecessary and absurd concept.
+- Simple ROM file management. ROMs are stored in your browser.
+- All EmulatorJS cores supported.
+  - Nintendo
+  - Sega
+  - Atari
+  - PlayStation
+  - many more
+
+Limitations:
+
+- AI can't play the game with you (yet).
+- No built-in ROMs. But you can find them [anywhere](https://archive.org/details/no-intro-2021).
+
+## Installation and Usage
+
+### Installation
+
+Install using SillyTavern's third party extensions installer using this link:
+
+`https://github.com/Cohee1207/SillyTavern-EmulatorJS`
+
+### Usage
+
+- Open "EmulatorJS" extension menu.
+- Click "Add ROM file".
+- Select the game file to add. Input the name and core (if it wasn't auto-detected).
+- Click "Play" button in the list or launch via the wand menu.
+
+## Prerequisites
+
+- Latest release version of SillyTavern.
+- ROM files downloaded from the net.
+
+## Support and Contributions
+
+Feel free to contribute.
+
+## License
+
+GPLv3
+
+---
 
 <div align = center>
 
 <img width = 300 src = docs/Logo-light.png#gh-dark-mode-only>
-<img width = 300 src = docs/Logo.png#gh-light-mode-only> 
- 
+<img width = 300 src = docs/Logo.png#gh-light-mode-only>
+
 <br>
 <br>
 
 [![Badge License]][License]
-    
-    
+
+
 Self-hosted **Javascript** emulation for various system.
 
 <br>
@@ -19,9 +70,9 @@ Self-hosted **Javascript** emulation for various system.
 [![Button Configurator]][Configurator]<br>
 [![Button Demo]][Demo] 
 [![Button Legacy]][Legacy]
-    
-[![Button Contributors]][Contributors]   
- 
+
+[![Button Contributors]][Contributors]
+
 Join our Discord server:
 
 [![Join our Discord server!](https://invite.casperiv.dev/?inviteCode=6akryGkETU&format=svg)](https://discord.gg/6akryGkETU)
@@ -69,7 +120,7 @@ It is **HIGHLY** suggested that you update to 4.0 ASAP.
 
 ### Development:
 
-*Run a local server with:* 
+*Run a local server with:*
 ```
 npm i
 npm start
@@ -94,7 +145,7 @@ npm start
 **[Game Boy Advance][Nintendo Game Boy Advance]**   | 
 **[Famicom / NES][NES / Famicom]**   | 
 **[Virtual Boy][Virtual Boy]**
-    
+
 **[Game Boy][Nintendo Game Boy]**   | 
 **[SNES]**   | 
 **[DS][Nintendo DS]**   | 
@@ -108,11 +159,11 @@ npm start
 **[Master System][Sega Master System]**   | 
 **[Mega Drive][Sega Mega Drive]**   | 
 **[Game Gear][Sega Game Gear]**
-    
+
 **[Saturn][Sega Saturn]**   | 
 **[32X][Sega 32X]**   | 
 **[CD][Sega CD]**
-    
+
 <br>
 <br>
 
@@ -129,12 +180,12 @@ npm start
 <br>
 
 ### Other
-    
+
 **[PlayStation]**   | 
 **[Arcade]**   | 
 **[3DO]**   | 
 **[MAME 2003]**
-    
+
 </div>
 
 <br>
