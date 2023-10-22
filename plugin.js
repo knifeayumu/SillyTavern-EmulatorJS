@@ -83,24 +83,33 @@ function tryGetCore(ext) {
         return ext
 }
 
+async function drawGameList() {
+    const games = [];
+    await gameStore.iterate((value, key) => {
+        const id = String(DOMPurify.sanitize(key));
+        const name = String(DOMPurify.sanitize(value.name));
+        const core = String(DOMPurify.sanitize(value.core));
 
-function drawGameList() {
+        games.push({ id, name, core });
+    });
+
+    games.sort((a, b) => { return a.core.localeCompare(b.core) || a.name.localeCompare(b.name) });
+
     const gameList = $('#game_list');
     gameList.empty();
+    for (const game of games) {
+        gameList.append(`
+        <div class="flex-container alignitemscenter">
+            <div title="Launch the game" class="emulatorjs_play fa-solid fa-play menu_button" game-id="${game.id}"></div>
+            <span class="emulatorjs_rom_name flex1" title="${game.name}">${game.name}</span>
+            <small>${game.core}</small>
+            <div title="Delete the game" class="emulatorjs_delete fa-solid fa-trash menu_button" game-id="${game.id}"></div>
+        </div>`);
+    }
+}
 
-    gameStore.iterate((value, key) => {
-        const id = DOMPurify.sanitize(key);
-        const name = DOMPurify.sanitize(value.name);
-        const core = DOMPurify.sanitize(value.core);
-        const div = $(`
-            <div class="flex-container alignitemscenter">
-                <div title="Launch the game" class="emulatorjs_play fa-solid fa-play menu_button" id="${id}"></div>
-                <span class="emulatorjs_rom_name flex1" title="${name}">${name}</span>
-                <small>${core}</small>
-            </div>
-        `);
-        gameList.append(div);
-    });
+function getCoreName(core) {
+    return Object.keys(cores).find(key => cores[key] === core) || core;
 }
 
 function onGameFileSelect() {
@@ -153,7 +162,7 @@ function onGameFileSelect() {
         };
 
         await gameStore.setItem(slug, game);
-        drawGameList();
+        await drawGameList();
     }
 
     reader.readAsDataURL(file);
@@ -185,7 +194,11 @@ async function startEmulator(gameId) {
         }
 
         gameSelect.trigger('change');
-        await callPopup(popupInstance, 'text');
+        const confirm = await callPopup(popupInstance, 'confirm');
+
+        if (!confirm) {
+            return;
+        }
     }
 
     if (!game?.data) {
@@ -200,7 +213,7 @@ async function startEmulator(gameId) {
     if (Array.isArray(context.chat)) {
         for (const message of context.chat) {
             if (message.mes == slug) {
-                const coreName = Object.keys(cores).find(key => cores[key] === game.core);
+                const coreName = getCoreName(game.core);
                 message.mes = `[EmulatorJS: ${context.name1} launches the game ${game.name} on ${coreName}]`;
                 break;
             }
@@ -233,7 +246,7 @@ async function startEmulator(gameId) {
     }
 }
 
-jQuery(() => {
+jQuery(async () => {
     const button = $(`
     <div id="emulatorjs_start" class="list-group-item flex-container flexGap5">
         <div class="fa-solid fa-gamepad" title="Start a new game in the emulator"/></div>
@@ -269,11 +282,22 @@ jQuery(() => {
     $('#emulatorjs_start').on('click', function () {
         startEmulator();
     });
-    $(document).on('click', '.emulatorjs_play', function () {
-        const id = $(this).attr('id');
-        startEmulator(id);
+    $(document).on('click', '.emulatorjs_play', async function () {
+        const id = $(this).attr('game-id');
+        await startEmulator(id);
         $('#chat').trigger('click');
     });
+    $(document).on('click', '.emulatorjs_delete', async function () {
+        const id = $(this).attr('game-id');
+        const confirm = await callPopup('Are you sure you want to delete this game?', 'confirm');
 
-    drawGameList();
+        if (!confirm) {
+            return;
+        }
+
+        await gameStore.removeItem(id);
+        await drawGameList();
+    });
+
+    await drawGameList();
 });

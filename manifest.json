@@ -7,5 +7,6 @@
     "css": "plugin.css",
     "author": "Cohee1207",
     "version": "1.0.0",
-    "homePage": "https://github.com/Cohee1207/SillyTavern-EmulatorJS"
+    "homePage": "https://github.com/Cohee1207/SillyTavern-EmulatorJS",
+    "auto_update": true
 }
