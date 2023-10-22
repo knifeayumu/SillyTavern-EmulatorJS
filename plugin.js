@@ -97,6 +97,12 @@ async function drawGameList() {
 
     const gameList = $('#game_list');
     gameList.empty();
+
+    if (games.length === 0) {
+        gameList.append('<div class="wide100p textAlignCenter">No ROMs found.</div>');
+        return;
+    }
+
     for (const game of games) {
         gameList.append(`
         <div class="flex-container alignitemscenter">
@@ -269,7 +275,7 @@ jQuery(async () => {
                     <div id="emulatorjs_add" class="menu_button menu_button_icon">Add ROM file</div>
                 </div>
                 <hr>
-                <div id="game_list"></div>
+                <div id="game_list" class="m-b-1"></div>
             </div>
         </div>
     </div>`;
