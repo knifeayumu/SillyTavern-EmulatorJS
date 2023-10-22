@@ -30,6 +30,22 @@ const cores = {
     "Commodore 64": "vice_x64"
 }
 
+function getAspectRatio(core) {
+    switch (core) {
+        case 'snes':
+            return '4/3';
+        case 'segaMD':
+        case 'nes':
+            return '13/10';
+        case 'gba':
+            return '3/2';
+        case 'gb':
+            return '10/9';
+    }
+
+    return '4/3';
+}
+
 function tryGetCore(ext) {
     if (["fds", "nes", "unif", "unf"].includes(ext))
         return "nes"
@@ -228,8 +244,10 @@ async function startEmulator(gameId) {
 
     const slugMessage = $('#chat .last_mes .mes_text');
     if (slugMessage.text().includes(slug)) {
+        const aspect = getAspectRatio(game.core);
         const frame = `<iframe id="${slug}" class="emulatorjs_game" src="${baseUrl}"></iframe>`;
         const frameInstance = $(frame);
+        frameInstance.css('aspect-ratio', aspect);
         slugMessage.empty().append(frameInstance);
 
         frameInstance.on('load', () => {
