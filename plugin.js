@@ -285,7 +285,6 @@ jQuery(async () => {
     $(document).on('click', '.emulatorjs_play', async function () {
         const id = $(this).attr('game-id');
         await startEmulator(id);
-        $('#chat').trigger('click');
     });
     $(document).on('click', '.emulatorjs_delete', async function () {
         const id = $(this).attr('game-id');
