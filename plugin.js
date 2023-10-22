@@ -108,7 +108,7 @@ function onGameFileSelect() {
     const parts = file.name.split('.');
     const ext = parts.pop();
     let name = parts.join('.');
-    let core = tryGetCore(ext);
+    let core = tryGetCore(ext) || 'nes';
 
     const popupText = `
         <div>
@@ -129,9 +129,6 @@ function onGameFileSelect() {
         name = nameInput.val();
     });
 
-    nameInput.val(name).trigger('input');
-    coreSelect.trigger('change');
-
     for (const [key, value] of Object.entries(cores)) {
         const option = document.createElement('option');
         option.innerText = key;
@@ -139,6 +136,9 @@ function onGameFileSelect() {
         option.selected = value === core;
         coreSelect.append(option);
     }
+
+    nameInput.val(name).trigger('input');
+    coreSelect.val(core).trigger('change');
 
     const reader = new FileReader();
     reader.onload = async (event) => {
