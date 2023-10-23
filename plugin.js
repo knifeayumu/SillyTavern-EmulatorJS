@@ -183,7 +183,7 @@ function onGameFileSelect() {
         if (!confirm) {
             return;
         }
-        
+
         const data = event.target.result;
         const slug = `emulatorjs-${Math.random().toString(36).substring(2, 15)}`;
 
@@ -213,22 +213,30 @@ async function startEmulator(gameId) {
             game = await gameStore.getItem(gameSelect.val());
         });
 
+        const games = [];
         await gameStore.iterate((value, key) => {
-            const option = document.createElement('option');
-            option.innerText = `${value.name} - ${value.core}`;
-            option.value = key;
-            gameSelect.append(option);
+            games.push({ name: value.name, core: value.core, key });
         });
 
-        if (gameSelect.children().length === 0) {
+        if (games.length === 0) {
             toastr.info('No games found. Please add a game first.');
             return;
+        }
+
+        games.sort((a, b) => { return a.core.localeCompare(b.core) || a.name.localeCompare(b.name) });
+
+        for (const game of games) {
+            const option = document.createElement('option');
+            option.innerText = `${game.name} - ${game.core}`;
+            option.value = game.key;
+            gameSelect.append(option);
         }
 
         gameSelect.trigger('change');
         const confirm = await callPopup(popupInstance, 'confirm', '', { okButton: 'Launch' });
 
         if (!confirm) {
+            console.log('User canceled the game selection.');
             return;
         }
     }
