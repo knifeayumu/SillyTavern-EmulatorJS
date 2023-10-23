@@ -11,6 +11,10 @@
                 game.core = 'picodrive';
             }
 
+            if (['gb'].includes(game.core)) {
+                game.core = 'mgba';
+            }
+
             window.EJS_player = "#game";
             window.EJS_biosUrl = "";
             window.EJS_gameName = game.name;
