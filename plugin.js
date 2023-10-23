@@ -5,7 +5,7 @@ const baseUrl = '/scripts/extensions/third-party/SillyTavern-EmulatorJS/plugin.h
 
 const cores = {
     "Nintendo 64": "n64",
-    "Nintendo Game Boy": "gb",
+    "Nintendo Game Boy / Color": "gb",
     "Nintendo Game Boy Advance": "gba",
     "Nintendo DS": "nds",
     "Nintendo Entertainment System": "nes",
@@ -178,7 +178,12 @@ function onGameFileSelect() {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-        await callPopup(popupInstance, 'text');
+        const confirm = await callPopup(popupInstance, 'confirm', { okButton: 'Save' });
+
+        if (!confirm) {
+            return;
+        }
+        
         const data = event.target.result;
         const slug = `emulatorjs-${Math.random().toString(36).substring(2, 15)}`;
 
@@ -221,7 +226,7 @@ async function startEmulator(gameId) {
         }
 
         gameSelect.trigger('change');
-        const confirm = await callPopup(popupInstance, 'confirm');
+        const confirm = await callPopup(popupInstance, 'confirm', { okButton: 'Launch' });
 
         if (!confirm) {
             return;
