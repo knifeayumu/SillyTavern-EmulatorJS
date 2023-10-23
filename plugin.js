@@ -76,6 +76,9 @@ function tryGetCore(ext) {
     if (["gg"].includes(ext))
         return "segaGG"
 
+    if (["gbc"].includes(ext))
+        return "gb"
+
     if (["z64", "n64"].includes(ext))
         return "n64"
 
