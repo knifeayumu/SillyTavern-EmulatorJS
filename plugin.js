@@ -40,6 +40,7 @@ function getAspectRatio(core) {
         case 'gba':
             return '3/2';
         case 'gb':
+        case 'segaGG':
             return '10/9';
     }
 
