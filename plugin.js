@@ -42,6 +42,8 @@ function getAspectRatio(core) {
         case 'gb':
         case 'segaGG':
             return '10/9';
+        case 'segaMS':
+            return '8/7';
     }
 
     return '4/3';
