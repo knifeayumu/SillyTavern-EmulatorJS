@@ -7,6 +7,10 @@
 
             const game = event.data;
 
+            if (['segaMS', 'segaGG'].includes(game.core)) {
+                game.core = 'picodrive';
+            }
+
             window.EJS_player = "#game";
             window.EJS_biosUrl = "";
             window.EJS_gameName = game.name;
