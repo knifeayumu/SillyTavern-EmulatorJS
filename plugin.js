@@ -36,14 +36,13 @@ function getAspectRatio(core) {
             return '4/3';
         case 'segaMD':
         case 'nes':
+        case 'segaMS':
             return '13/10';
         case 'gba':
             return '3/2';
         case 'gb':
         case 'segaGG':
             return '10/9';
-        case 'segaMS':
-            return '8/7';
     }
 
     return '4/3';
