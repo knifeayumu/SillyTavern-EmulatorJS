@@ -178,7 +178,7 @@ function onGameFileSelect() {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-        const confirm = await callPopup(popupInstance, 'confirm', { okButton: 'Save' });
+        const confirm = await callPopup(popupInstance, 'confirm', '', { okButton: 'Save' });
 
         if (!confirm) {
             return;
@@ -226,7 +226,7 @@ async function startEmulator(gameId) {
         }
 
         gameSelect.trigger('change');
-        const confirm = await callPopup(popupInstance, 'confirm', { okButton: 'Launch' });
+        const confirm = await callPopup(popupInstance, 'confirm', '', { okButton: 'Launch' });
 
         if (!confirm) {
             return;
