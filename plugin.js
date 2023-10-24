@@ -106,6 +106,10 @@ function tryGetCore(ext) {
         return ext
 }
 
+function getSlug() {
+    return Date.now().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 async function drawGameList() {
     const games = [];
     await gameStore.iterate((value, key) => {
@@ -141,7 +145,7 @@ function getCoreName(core) {
     return Object.keys(cores).find(key => cores[key] === core) || core;
 }
 
-function onGameFileSelect() {
+async function onGameFileSelect() {
     const file = this.files[0];
     const parts = file.name.split('.');
     const ext = parts.pop();
@@ -178,29 +182,36 @@ function onGameFileSelect() {
     nameInput.val(name).trigger('input');
     coreSelect.val(core).trigger('change');
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        const confirm = await callPopup(popupInstance, 'confirm', '', { okButton: 'Save' });
+    const confirm = await callPopup(popupInstance, 'confirm', '', { okButton: 'Save' });
 
-        if (!confirm) {
-            return;
-        }
-
-        const data = event.target.result;
-        const slug = `emulatorjs-${Math.random().toString(36).substring(2, 15)}`;
-
-        const game = {
-            name: name,
-            core: core,
-            data: data,
-        };
-
-        await gameStore.setItem(slug, game);
-        await drawGameList();
+    if (!confirm) {
+        return;
     }
 
-    reader.readAsDataURL(file);
+    const data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            resolve(event.target.result);
+        }
+        reader.onerror = (event) => {
+            reject(event.target.error);
+        }
+
+        reader.readAsArrayBuffer(file);
+    });
+
+    const slug = `emulatorjs-${getSlug()}`;
+
+    const game = {
+        name: name,
+        core: core,
+        data: data,
+    };
+
+    await gameStore.setItem(slug, game);
+    await drawGameList();
 }
+
 
 async function startEmulator(gameId) {
     let game = {};
@@ -248,7 +259,7 @@ async function startEmulator(gameId) {
         return;
     }
 
-    const slug = 'emulatorjs-frame-' + Math.random().toString(36).substring(2, 15);
+    const slug = 'emulatorjs-frame-' + getSlug();
     const context = window['SillyTavern'].getContext();
     context.sendSystemMessage('generic', slug);
 

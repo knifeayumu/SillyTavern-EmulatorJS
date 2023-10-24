@@ -7,6 +7,12 @@
 
             const game = event.data;
 
+            if (!game?.data) return;
+
+            if (game.data instanceof ArrayBuffer) {
+                game.data = new Blob([game.data]);
+            }
+
             if (['segaMS', 'segaGG'].includes(game.core)) {
                 game.core = 'picodrive';
             }
