@@ -43,6 +43,8 @@ function getAspectRatio(core) {
         case 'gb':
         case 'segaGG':
             return '10/9';
+        case 'lynx':
+            return '160/102';
     }
 
     return '4/3';
@@ -64,7 +66,7 @@ function tryGetCore(ext) {
     if (["vb"].includes(ext))
         return "vb"
 
-    if (["lynx"].includes(ext))
+    if (["lynx", "lnx"].includes(ext))
         return "lynx"
 
     if (["32x"].includes(ext))
