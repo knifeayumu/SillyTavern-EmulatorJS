@@ -2,6 +2,7 @@ import { callPopup } from "../../../../script.js";
 
 const gameStore = new localforage.createInstance({ name: "SillyTavern_EmulatorJS" });
 const baseUrl = '/scripts/extensions/third-party/SillyTavern-EmulatorJS/plugin.html';
+const docUrl = 'https://github.com/Cohee1207/SillyTavern-EmulatorJS/tree/main/docs/Systems';
 
 const cores = {
     "Nintendo 64": "n64",
@@ -57,6 +58,9 @@ function tryGetCore(ext) {
     if (["smc", "fig", "sfc", "gd3", "gd7", "dx2", "bsx", "swc"].includes(ext))
         return "snes"
 
+    if (["iso", "bin", "chd", "cue", "ccd", "mds", "mdf", "pbp", "cbn", "nrg", "cdi", "gdi", "cue", "cd"].includes(ext))
+        return "psx"
+
     if (["gen", "bin", "smd", "md"].includes(ext))
         return "segaMD"
 
@@ -98,9 +102,6 @@ function tryGetCore(ext) {
 
     if (["d64"].includes(ext))
         return "vice_x64"
-
-    if (["iso", "bin", "chd", "cue", "ccd", "mds", "mdf", "pbp", "cbn", "nrg", "cdi", "gdi", "cue", "cd"].includes(ext))
-        return "psx"
 
     if (["nds", "gba", "gb", "z64", "n64"].includes(ext))
         return ext
@@ -151,6 +152,7 @@ async function onGameFileSelect() {
     const ext = parts.pop();
     let name = parts.join('.');
     let core = tryGetCore(ext) || 'nes';
+    let bios = '';
 
     const popupText = `
         <div>
@@ -158,20 +160,33 @@ async function onGameFileSelect() {
             <select id="emulatorjs_cores" class="text_pole wide100p"></select>
             <h4>Name</h4>
             <textarea id="emulatorjs_name" type="text" class="text_pole wide100p" placeholder="<Name>" rows="2"></textarea>
+            <h4>BIOS (optional)</h4>
+            <input id="emulatorjs_bios" type="file" class="text_pole wide100p" placeholder="<BIOS>" />
+            <div class="emulatorjs_bios_info">
+                Some cores require a BIOS file to work.<br>
+                Please check the <a href="${docUrl}" target="_blank">documentation</a> of the core you selected.
+            </div>
         </div>`;
 
     const popupInstance = $(popupText);
     const coreSelect = popupInstance.find('#emulatorjs_cores');
+    const nameInput = popupInstance.find('#emulatorjs_name');
+    const biosInput = popupInstance.find('#emulatorjs_bios');
+
     coreSelect.on('input change', () => {
         core = coreSelect.val();
     });
-    const nameInput = popupInstance.find('#emulatorjs_name');
 
     nameInput.on('input change', () => {
         name = nameInput.val();
     });
 
-    for (const [key, value] of Object.entries(cores)) {
+    biosInput.on('change', async () => {
+        const biosFile = biosInput.prop('files')[0];
+        bios = await readAsArrayBuffer(biosFile);
+    });
+
+    for (const [key, value] of Object.entries(cores).sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]))) {
         const option = document.createElement('option');
         option.innerText = key;
         option.value = value;
@@ -188,17 +203,7 @@ async function onGameFileSelect() {
         return;
     }
 
-    const data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            resolve(event.target.result);
-        }
-        reader.onerror = (event) => {
-            reject(event.target.error);
-        }
-
-        reader.readAsArrayBuffer(file);
-    });
+    const data = await readAsArrayBuffer(file);
 
     const slug = `emulatorjs-${getSlug()}`;
 
@@ -206,12 +211,27 @@ async function onGameFileSelect() {
         name: name,
         core: core,
         data: data,
+        bios: bios,
     };
 
     await gameStore.setItem(slug, game);
     await drawGameList();
 }
 
+
+async function readAsArrayBuffer(file) {
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            resolve(event.target.result);
+        };
+        reader.onerror = (event) => {
+            reject(event.target.error);
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+}
 
 async function startEmulator(gameId) {
     let game = {};
