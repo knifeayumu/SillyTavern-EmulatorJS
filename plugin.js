@@ -1,8 +1,27 @@
-import { callPopup } from "../../../../script.js";
+import { callPopup, eventSource, event_types, generateQuietPrompt, getCurrentChatId, getRequestHeaders, is_send_press, saveSettingsDebounced, substituteParams } from "../../../../script.js";
+import { ModuleWorkerWrapper, extension_settings, getContext } from "../../../extensions.js";
+import { is_group_generating } from "../../../group-chats.js";
+import { isImageInliningSupported } from "../../../openai.js";
+import { SECRET_KEYS, secret_state } from "../../../secrets.js";
+import { getBase64Async, waitUntilCondition } from "../../../utils.js";
 
 const gameStore = new localforage.createInstance({ name: "SillyTavern_EmulatorJS" });
 const baseUrl = '/scripts/extensions/third-party/SillyTavern-EmulatorJS/plugin.html';
 const docUrl = 'https://github.com/Cohee1207/SillyTavern-EmulatorJS/tree/main/docs/Systems';
+const canvas = new OffscreenCanvas(512, 512);
+
+let currentGame = '';
+let currentCore = '';
+let commentTimer = null;
+let gamesLaunched = 0;
+
+const defaultSettings = {
+    commentInterval: 0,
+    captionPrompt: `This is a screenshot of "{{game}}" game played on {{core}}. Provide a detailed description of what is happening in the game.`,
+    commentPrompt: `{{user}} is playing "{{game}}" on {{core}}. Write a {{random:cheeky, snarky, funny, clever, witty, teasing, quirky, sly, saucy}} comment from {{char}}'s perspective based on the following:\n\n{{caption}}`,
+};
+
+const commentWorker = new ModuleWorkerWrapper(provideComment);
 
 const cores = {
     "Nintendo 64": "n64",
@@ -109,6 +128,112 @@ function tryGetCore(ext) {
 
 function getSlug() {
     return Date.now().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+/**
+ * Generates a description of the image using OpenAI API.
+ * @param {string} base64Img  Base64-encoded image
+ * @returns {Promise<string>} Generated description
+ */
+async function generateCaption(base64Img) {
+    if (!secret_state[SECRET_KEYS.OPENAI]) {
+        throw new Error('provideComment: OpenAI API key is not set.');
+    }
+
+    const captionPromptTemplate = extension_settings.emulatorjs.captionPrompt || defaultSettings.captionPrompt;
+    const captionPrompt = substituteParams(captionPromptTemplate)
+        .replace('{{game}}', currentGame).replace('{{core}}', currentCore);
+
+    const apiResult = await fetch('/api/openai/caption-image', {
+        method: 'POST',
+        headers: getRequestHeaders(),
+        body: JSON.stringify({ image: base64Img, prompt: captionPrompt }),
+    });
+
+    if (!apiResult.ok) {
+        throw new Error('provideComment: Failed to caption image via OpenAI.');
+    }
+
+    const data = await apiResult.json();
+    console.log('provideComment: got OpenAI response', data);
+
+    return data?.caption;
+}
+
+/**
+ * Generate a character response for the provided game screenshot.
+ * @param {string} base64Img  Base64-encoded image
+ */
+async function provideComment(base64Img) {
+    const chatId = getCurrentChatId();
+    console.debug('provideComment: got frame image');
+
+    if (is_send_press || is_group_generating) {
+        return console.log('provideComment: generation is in progress, skipping');
+    }
+
+    const ttsAudio = document.getElementById('tts_audio');
+
+    if (ttsAudio && ttsAudio instanceof HTMLAudioElement && !ttsAudio.paused) {
+        try {
+            console.log('provideComment: waiting for TTS audio to finish');
+            await waitUntilCondition(() => ttsAudio.paused, 10000);
+        } catch {
+            console.log('provideComment: TTS audio did not finish in 10 seconds, giving up');
+        }
+    }
+
+    const input = substituteParams('{{input}}');
+
+    if (input.length > 0) {
+        return console.log('provideComment: user input is not empty, skipping');
+    }
+
+    let caption = 'see included image';
+
+    // If image inlining is not supported, generate a caption
+    if (!isImageInliningSupported()) {
+        caption = await generateCaption(base64Img);
+    }
+
+    if (!caption) {
+        return console.error('provideComment: failed to generate caption');
+    }
+
+    if (chatId !== getCurrentChatId()) {
+        return console.log('provideComment: chat changed, skipping');
+    }
+
+    const commentPromptTemplate = extension_settings.emulatorjs.commentPrompt || defaultSettings.commentPrompt;
+    const commentPrompt = substituteParams(commentPromptTemplate)
+        .replace(/{{caption}}/i, caption)
+        .replace(/{{core}}/i, currentCore)
+        .replace(/{{game}}/i, currentGame);
+
+    const commentMessage = await generateQuietPrompt(commentPrompt, true, false, base64Img);
+    console.log('provideComment got comment message', commentMessage);
+
+    if (!commentMessage) {
+        return console.error('provideComment: failed to generate comment');
+    }
+
+    if (chatId !== getCurrentChatId()) {
+        return console.log('provideComment: chat changed, skipping');
+    }
+
+    const context = getContext();
+    const message = {
+        mes: commentMessage,
+        name: context.name2,
+        is_system: false,
+        is_user: false,
+        extra: {},
+    };
+
+    context.chat.push(message);
+    context.addOneMessage(message);
+
+    await context.saveChat();
 }
 
 async function drawGameList() {
@@ -218,7 +343,6 @@ async function onGameFileSelect() {
     await drawGameList();
 }
 
-
 async function readAsArrayBuffer(file) {
     return await new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -231,6 +355,117 @@ async function readAsArrayBuffer(file) {
 
         reader.readAsArrayBuffer(file);
     });
+}
+
+/**
+ * Starts the game comment worker.
+ * @param {HTMLIFrameElement} frameElement Host frame element
+ */
+async function setupCommentWorker(frameElement) {
+    if (!getCurrentChatId()) {
+        return console.log('provideComment: no chat selected, skipping');
+    }
+
+    if ('ImageCapture' in window === false) {
+        toastr.error('Your browser does not support ImageCapture API. Please use a different browser.', 'EmulatorJS');
+        return;
+    }
+
+    try {
+        // Wait for the emulator object and its canvas to be initialized
+        await waitUntilCondition(() => frameElement.contentWindow['EJS_emulator']?.canvas, 5000);
+        const emulatorObject = frameElement.contentWindow['EJS_emulator'];
+        const emulatorCanvas = emulatorObject?.canvas;
+
+        if (!emulatorCanvas) {
+            throw new Error('Failed to get the emulator canvas.');
+        }
+
+        // Capture the emulator canvas at 1 FPS
+        const stream = emulatorCanvas.captureStream(1);
+        const [videoTrack] = stream.getVideoTracks();
+
+        if (!videoTrack) {
+            throw new Error('Failed to get the video track.');
+        }
+
+        // Create an image capture object
+        const imageCapture = new window['ImageCapture'](videoTrack);
+        const updateMs = extension_settings.emulatorjs.commentInterval * 1000;
+
+        // If the video track is ended, stop the worker
+        videoTrack.addEventListener('ended', () => {
+            clearTimeout(commentTimer);
+            return console.log('provideComment: video ended, stopping comment worker.');
+        });
+
+        // If the chat is changed, stop the worker
+        eventSource.once(event_types.CHAT_CHANGED, () => {
+            clearTimeout(commentTimer);
+            return console.log('provideComment: chat changed, stopping comment worker.');
+        });
+
+        const doUpdate = async () => {
+            try {
+                console.log(`provideComment: entered at ${new Date().toISOString()}`);
+
+                // Check if the video track is not ended
+                if (videoTrack.readyState === 'ended') {
+                    return console.log('provideComment: video track ended');
+                }
+
+                // Check if the document is focused
+                if (!document.hasFocus()) {
+                    return console.log('provideComment: document not focused');
+                }
+
+                // Check if the emulator is running
+                if (emulatorObject?.paused === true) {
+                    return console.log('provideComment: emulator paused');
+                }
+
+                // Grab a frame from the video track
+                console.debug('provideComment: grabbing frame');
+                const bitmap = await imageCapture.grabFrame();
+
+                // Draw frame to canvas
+                console.debug('provideComment: drawing frame to canvas');
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                const context = canvas.getContext('2d');
+                context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+                // Convert to base64 PNG string
+                console.debug('provideComment: converting canvas to base64');
+                const blob = await canvas.convertToBlob({ type: 'image/png', quality: 1 });
+                const base64 = await getBase64Async(blob);
+
+                // Send to worker
+                console.debug('provideComment: sending image to worker');
+                await commentWorker.update(base64);
+                console.debug('provideComment: worker finished');
+            } finally {
+                // If the video track is ended, stop the worker
+                if (videoTrack.readyState === 'ended') {
+                    clearTimeout(commentTimer);
+                    return console.debug('provideComment: video ended, stopping comment worker.');
+                }
+
+                // Schedule next update
+                commentTimer = setTimeout(doUpdate, updateMs);
+                const nextUpdate = new Date(Date.now() + updateMs).toISOString();
+                console.log(`provideComment: scheduled next update at ${nextUpdate}`);
+            }
+        };
+
+        // Start the worker
+        const firstUpdate = new Date(Date.now() + updateMs).toISOString();
+        console.log(`provideComment: starting comment worker, first update at ${firstUpdate}`);
+        commentTimer = setTimeout(doUpdate, updateMs);
+    } catch (error) {
+        console.error('Failed to start comment worker.', error);
+        toastr.warning('Failed to start comment worker. Check debug console for more details.', 'EmulatorJS');
+    }
 }
 
 async function startEmulator(gameId) {
@@ -281,27 +516,36 @@ async function startEmulator(gameId) {
 
     const slug = 'emulatorjs-frame-' + getSlug();
     const context = window['SillyTavern'].getContext();
+    const commentsEnabled = extension_settings.emulatorjs.commentInterval > 0 && !!window['ImageCapture'];
+    const coreName = getCoreName(game.core);
     context.sendSystemMessage('generic', slug);
 
     if (Array.isArray(context.chat)) {
         for (const message of context.chat) {
             if (message.mes == slug) {
-                const coreName = getCoreName(game.core);
                 message.mes = `[EmulatorJS: ${context.name1} launches the game ${game.name} on ${coreName}]`;
                 break;
             }
         }
     }
 
-    const slugMessage = $('#chat .last_mes .mes_text');
-    if (slugMessage.text().includes(slug)) {
+    const slugMessage = $('#chat .last_mes');
+    const slugMessageText = slugMessage.find('.mes_text');
+    if (slugMessageText.text().includes(slug)) {
+        slugMessage.removeClass('last_mes');
+        currentGame = game.name;
+        currentCore = coreName;
         const aspect = getAspectRatio(game.core);
         const frame = `<iframe id="${slug}" class="emulatorjs_game" src="${baseUrl}"></iframe>`;
         const frameInstance = $(frame);
         frameInstance.css('aspect-ratio', aspect);
-        slugMessage.empty().append(frameInstance);
+        slugMessageText.empty().append(frameInstance);
 
-        frameInstance.on('load', () => {
+        // Detach the message from the chat flow
+        const order = (10000 + gamesLaunched++).toFixed(0);
+        slugMessage.css('order', order);
+
+        frameInstance.on('load', async () => {
             const frameElement = frameInstance[0];
             if (frameElement instanceof HTMLIFrameElement) {
                 frameElement.contentWindow.postMessage(game, '*');
@@ -311,6 +555,15 @@ async function startEmulator(gameId) {
                 frameElement.contentWindow.addEventListener('mousemove', () => {
                     frameElement.contentWindow.focus();
                 });
+                if (commentsEnabled) {
+                    await setupCommentWorker(frameElement);
+                }
+            }
+        });
+
+        frameInstance.on('unload', () => {
+            if (commentsEnabled) {
+                clearTimeout(commentTimer);
             }
         });
 
@@ -322,6 +575,16 @@ async function startEmulator(gameId) {
 }
 
 jQuery(async () => {
+    if (!extension_settings.emulatorjs) {
+        extension_settings.emulatorjs = structuredClone(defaultSettings);
+    }
+
+    for (const key of Object.keys(defaultSettings)) {
+        if (extension_settings.emulatorjs[key] === undefined) {
+            extension_settings.emulatorjs[key] = defaultSettings[key];
+        }
+    }
+
     const button = $(`
     <div id="emulatorjs_start" class="list-group-item flex-container flexGap5">
         <div class="fa-solid fa-gamepad" title="Start a new game in the emulator"/></div>
@@ -338,6 +601,28 @@ jQuery(async () => {
                 <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
             </div>
             <div class="inline-drawer-content">
+                <div class="flex-container">
+                    <label for="emulatorjs_comment_interval">Comment interval (in seconds, 0 = disabled)</label>
+                    <small>
+                        Your browser must support <a href="https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility" target="_blank">ImageCapture</a>.
+                        OpenAI API key with access to GPT-4V model and/or image inlining enabled are required.
+                    </small>
+                    <input id="emulatorjs_comment_interval" type="number" class="text_pole wide100p" value="0" min="0" step="10" max="6000" />
+                    <label for="emulatorjs_caption_prompt">Caption prompt</label>
+                    <small>
+                        This prompt is used to generate a description of the image using OpenAI API.
+                        If image inlining is supported, this prompt is not used.
+                        You can use <code>{{game}}</code> and <code>{{core}}</code> placeholders.
+                    </small>
+                    <textarea id="emulatorjs_caption_prompt" type="text" class="text_pole textarea_compact wide100p" rows="3">${defaultSettings.captionPrompt}</textarea>
+                    <label for="emulatorjs_comment_prompt">Comment prompt</label>
+                    <small>
+                        This prompt is used to generate a character's comment.
+                        You can use <code>{{game}}</code>, <code>{{core}}</code> and <code>{{caption}}</code> placeholders.
+                        For image inlining mode, <code>{{caption}}</code> is replaced with <code>see included image</code>.
+                    </small>
+                    <textarea id="emulatorjs_comment_prompt" type="text" class="text_pole textarea_compact wide100p" rows="4">${defaultSettings.commentPrompt}</textarea>
+                </div>
                 <input id="emulatorjs_file" type="file" hidden />
                 <div class="flex-container wide100p alignitemscenter">
                     <h3 class="flex1">ROM Files</h3>
@@ -356,6 +641,21 @@ jQuery(async () => {
     $('#emulatorjs_file').on('change', onGameFileSelect);
     $('#emulatorjs_start').on('click', function () {
         startEmulator();
+    });
+    $('#emulatorjs_comment_interval').val(extension_settings.emulatorjs.commentInterval);
+    $('#emulatorjs_comment_interval').on('input change', function () {
+        extension_settings.emulatorjs.commentInterval = Number($(this).val());
+        saveSettingsDebounced();
+    });
+    $('#emulatorjs_caption_prompt').val(extension_settings.emulatorjs.captionPrompt);
+    $('#emulatorjs_caption_prompt').on('input change', function () {
+        extension_settings.emulatorjs.captionPrompt = $(this).val();
+        saveSettingsDebounced();
+    });
+    $('#emulatorjs_comment_prompt').val(extension_settings.emulatorjs.commentPrompt);
+    $('#emulatorjs_comment_prompt').on('input change', function () {
+        extension_settings.emulatorjs.commentPrompt = $(this).val();
+        saveSettingsDebounced();
     });
     $(document).on('click', '.emulatorjs_play', async function () {
         const id = $(this).attr('game-id');
