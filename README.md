@@ -7,6 +7,7 @@ This extension allows you to play retro console games right from the SillyTavern
 Cool stuff:
 
 - Unnecessary and absurd concept.
+- AI can provide immersive comments on your gameplay (OpenAI API key required).
 - Simple ROM file management. ROMs are stored in your browser.
 - All EmulatorJS cores supported.
   - Nintendo
@@ -17,8 +18,48 @@ Cool stuff:
 
 Limitations:
 
-- AI can't play the game with you (yet).
+- AI can't play the game with you as a second player (yet).
 - No built-in ROMs. But you can find them [anywhere](https://archive.org/details/no-intro-2021).
+
+## NEW! AI Streaming mode
+
+With the power of GPT-4 Vision, your AI bots can now see your gameplay and provide witty in-character comments.
+
+### Requirements
+
+1. Latest *staging* version of SillyTavern.
+2. Latest update of EmulatorJS extension.
+3. A browser that supports [ImageCapture](https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility). Tested on desktop Chrome. Firefox requires to enable it with config. Safari won't work.
+4. (If image inlining is disabled) OpenAI API key with access to the "gpt-4-vision" model.
+5. (If image inlining is enabled. Recommended) OpenAI or OpenRouter API key with "gpt-4-vision" as the selected model.
+
+### How to enable
+
+1. Make sure you set the interval of providing comments in the EmulatorJS extension settings. This setting defines how often the character is queried for comments using a snap of your current gameplay. A value of 0 indicates that no comments are provided.
+2. Select a character chat and launch the game. For the best performance, make sure that the ROM file is properly named so that AI can have more background context.
+3. Start playing as you normally would. The vision model will be queried periodically to write a comment based on the latest screenshot it "sees".
+
+### Why I'm not seeing any comments?
+
+Comments are temporarily paused (interval step skipped) if:
+
+1. Emulator is paused (with a pause button, not in-game).
+2. The browser window is out of focus.
+3. The user input area is not empty. This is to let you type your reply in peace.
+4. Another reply generation is currently in progress.
+5. TTS voice is being read aloud. Comment is held off (10 seconds maximum) until it finishes, but not skipped.
+
+Other common issues:
+
+1. Make sure you've set a commenting interval before launching the game.
+2. Make sure you have set an OpenAI key and there are no errors in the ST server console.
+
+Still doesn't work? Send us your browser debug console logs (press F12).
+
+### Settings
+
+1. Caption template - a prompt used to describe the in-game screenshot. `{{game}}` and `{{core}}` additional macro are supported.
+2. Comment template - a prompt used to write a comment based on the generated caption. `{{game}}`, `{{core}}`, `{{caption}}` additional macro are supported. For image inlining mode, `{{caption}}` is replaced with `see included image`.
 
 ## Installation and Usage
 
