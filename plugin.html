@@ -26,7 +26,7 @@
             }
 
             window.EJS_player = "#game";
-            window.EJS_biosUrl = game.bios || "";
+            window.EJS_biosUrl = game.bios || undefined;
             window.EJS_gameName = game.name;
             window.EJS_gameUrl = game.data;
             window.EJS_core = game.core;
@@ -37,6 +37,7 @@
             window.EJS_defaultOptions = {
                 'save-state-location': 'browser',
             };
+            // window.EJS_DEBUG_XX = true;
 
             const script = document.createElement("script");
             script.src = "data/loader.js";

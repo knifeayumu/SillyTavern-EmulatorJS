@@ -1,9 +1,9 @@
-import { callPopup, eventSource, event_types, generateQuietPrompt, getCurrentChatId, getRequestHeaders, is_send_press, saveSettingsDebounced, substituteParams } from "../../../../script.js";
+import { callPopup, eventSource, event_types, generateQuietPrompt, getCurrentChatId, is_send_press, saveSettingsDebounced, substituteParams } from "../../../../script.js";
 import { ModuleWorkerWrapper, extension_settings, getContext } from "../../../extensions.js";
 import { is_group_generating } from "../../../group-chats.js";
 import { isImageInliningSupported } from "../../../openai.js";
-import { SECRET_KEYS, secret_state } from "../../../secrets.js";
 import { getBase64Async, waitUntilCondition } from "../../../utils.js";
+import { getMultimodalCaption } from "../../shared.js";
 
 const gameStore = new localforage.createInstance({ name: "SillyTavern_EmulatorJS" });
 const baseUrl = '/scripts/extensions/third-party/SillyTavern-EmulatorJS/plugin.html';
@@ -19,6 +19,7 @@ const defaultSettings = {
     commentInterval: 0,
     captionPrompt: `This is a screenshot of "{{game}}" game played on {{core}}. Provide a detailed description of what is happening in the game.`,
     commentPrompt: `{{user}} is playing "{{game}}" on {{core}}. Write a {{random:cheeky, snarky, funny, clever, witty, teasing, quirky, sly, saucy}} comment from {{char}}'s perspective based on the following:\n\n{{caption}}`,
+    forceCaptions: false,
 };
 
 const commentWorker = new ModuleWorkerWrapper(provideComment);
@@ -136,28 +137,12 @@ function getSlug() {
  * @returns {Promise<string>} Generated description
  */
 async function generateCaption(base64Img) {
-    if (!secret_state[SECRET_KEYS.OPENAI]) {
-        throw new Error('provideComment: OpenAI API key is not set.');
-    }
-
     const captionPromptTemplate = extension_settings.emulatorjs.captionPrompt || defaultSettings.captionPrompt;
     const captionPrompt = substituteParams(captionPromptTemplate)
         .replace('{{game}}', currentGame).replace('{{core}}', currentCore);
 
-    const apiResult = await fetch('/api/openai/caption-image', {
-        method: 'POST',
-        headers: getRequestHeaders(),
-        body: JSON.stringify({ image: base64Img, prompt: captionPrompt }),
-    });
-
-    if (!apiResult.ok) {
-        throw new Error('provideComment: Failed to caption image via OpenAI.');
-    }
-
-    const data = await apiResult.json();
-    console.log('provideComment: got OpenAI response', data);
-
-    return data?.caption;
+    const caption = await getMultimodalCaption(base64Img, captionPrompt);
+    return caption;
 }
 
 /**
@@ -177,9 +162,9 @@ async function provideComment(base64Img) {
     if (ttsAudio && ttsAudio instanceof HTMLAudioElement && !ttsAudio.paused) {
         try {
             console.log('provideComment: waiting for TTS audio to finish');
-            await waitUntilCondition(() => ttsAudio.paused, 10000);
+            await waitUntilCondition(() => ttsAudio.paused, 20000);
         } catch {
-            console.log('provideComment: TTS audio did not finish in 10 seconds, giving up');
+            console.log('provideComment: TTS audio did not finish in 20 seconds, giving up');
         }
     }
 
@@ -190,9 +175,10 @@ async function provideComment(base64Img) {
     }
 
     let caption = 'see included image';
+    const shouldGenerateCaption = extension_settings.emulatorjs.forceCaptions || !isImageInliningSupported();
 
     // If image inlining is not supported, generate a caption
-    if (!isImageInliningSupported()) {
+    if (shouldGenerateCaption) {
         caption = await generateCaption(base64Img);
     }
 
@@ -210,7 +196,8 @@ async function provideComment(base64Img) {
         .replace(/{{core}}/i, currentCore)
         .replace(/{{game}}/i, currentGame);
 
-    const commentMessage = await generateQuietPrompt(commentPrompt, true, false, base64Img);
+    const quietImage = shouldGenerateCaption ? '' : base64Img;
+    const commentMessage = await generateQuietPrompt(commentPrompt, true, false, quietImage);
     console.log('provideComment got comment message', commentMessage);
 
     if (!commentMessage) {
@@ -231,7 +218,9 @@ async function provideComment(base64Img) {
     };
 
     context.chat.push(message);
+    await eventSource.emit(event_types.MESSAGE_RECEIVED, chatId);
     context.addOneMessage(message);
+    await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chatId);
 
     await context.saveChat();
 }
@@ -405,12 +394,14 @@ async function setupCommentWorker(frameElement) {
             return console.log('provideComment: chat changed, stopping comment worker.');
         });
 
+        const shouldStopWorker = () => videoTrack.readyState === 'ended' || extension_settings.emulatorjs.commentInterval === 0;
+
         const doUpdate = async () => {
             try {
                 console.log(`provideComment: entered at ${new Date().toISOString()}`);
 
                 // Check if the video track is not ended
-                if (videoTrack.readyState === 'ended') {
+                if (shouldStopWorker()) {
                     return console.log('provideComment: video track ended');
                 }
 
@@ -446,7 +437,7 @@ async function setupCommentWorker(frameElement) {
                 console.debug('provideComment: worker finished');
             } finally {
                 // If the video track is ended, stop the worker
-                if (videoTrack.readyState === 'ended') {
+                if (shouldStopWorker()) {
                     clearTimeout(commentTimer);
                     return console.debug('provideComment: video ended, stopping comment worker.');
                 }
@@ -602,26 +593,34 @@ jQuery(async () => {
             </div>
             <div class="inline-drawer-content">
                 <div class="flex-container">
-                    <label for="emulatorjs_comment_interval">Comment interval (in seconds, 0 = disabled)</label>
+                    <label for="emulatorjs_comment_interval">Comment Interval <small>(in seconds, 0 = disabled)</small></label>
                     <small>
                         Your browser must support <a href="https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility" target="_blank">ImageCapture</a>.
-                        OpenAI API key with access to GPT-4V model and/or image inlining enabled are required.
+                        OpenAI / OpenRouter API key with access to a multimodal model (e.g. GPT-4V or Llava) and/or image inlining enabled are required.
                     </small>
                     <input id="emulatorjs_comment_interval" type="number" class="text_pole wide100p" value="0" min="0" step="10" max="6000" />
-                    <label for="emulatorjs_caption_prompt">Caption prompt</label>
+                    <label for="emulatorjs_caption_prompt">Caption Prompt</label>
                     <small>
-                        This prompt is used to generate a description of the image using OpenAI API.
-                        If image inlining is supported, this prompt is not used.
-                        You can use <code>{{game}}</code> and <code>{{core}}</code> placeholders.
+                        This prompt is used to generate a description of the image using a multimodal model.
+                        If image inlining is supported and captioning is not forced, this prompt is not used.
+                        Select your preferred source and model in the "Image Captioning" section of the settings.
+                        You can use <code>{{game}}</code> and <code>{{core}}</code> placeholders here.
                     </small>
                     <textarea id="emulatorjs_caption_prompt" type="text" class="text_pole textarea_compact wide100p" rows="3">${defaultSettings.captionPrompt}</textarea>
-                    <label for="emulatorjs_comment_prompt">Comment prompt</label>
+                    <label for="emulatorjs_comment_prompt">Comment Prompt</label>
                     <small>
                         This prompt is used to generate a character's comment.
                         You can use <code>{{game}}</code>, <code>{{core}}</code> and <code>{{caption}}</code> placeholders.
                         For image inlining mode, <code>{{caption}}</code> is replaced with <code>see included image</code>.
                     </small>
                     <textarea id="emulatorjs_comment_prompt" type="text" class="text_pole textarea_compact wide100p" rows="4">${defaultSettings.commentPrompt}</textarea>
+                    <label for="emulatorjs_force_captions" class="checkbox_label">
+                        <input id="emulatorjs_force_captions" type="checkbox" />
+                        <span>Force captions</span>
+                    </label>
+                    <small>
+                        If enabled, multimodal captions will be generated even if image inlining is supported.
+                    </small>
                 </div>
                 <input id="emulatorjs_file" type="file" hidden />
                 <div class="flex-container wide100p alignitemscenter">
@@ -655,6 +654,11 @@ jQuery(async () => {
     $('#emulatorjs_comment_prompt').val(extension_settings.emulatorjs.commentPrompt);
     $('#emulatorjs_comment_prompt').on('input change', function () {
         extension_settings.emulatorjs.commentPrompt = $(this).val();
+        saveSettingsDebounced();
+    });
+    $('#emulatorjs_force_captions').prop('checked', extension_settings.emulatorjs.forceCaptions);
+    $('#emulatorjs_force_captions').on('input change', function () {
+        extension_settings.emulatorjs.forceCaptions = $(this).prop('checked');
         saveSettingsDebounced();
     });
     $(document).on('click', '.emulatorjs_play', async function () {
