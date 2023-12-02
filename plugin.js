@@ -1,11 +1,11 @@
-import { callPopup, eventSource, event_types, generateQuietPrompt, getCurrentChatId, is_send_press, saveSettingsDebounced, substituteParams } from "../../../../script.js";
-import { ModuleWorkerWrapper, extension_settings, getContext } from "../../../extensions.js";
-import { is_group_generating } from "../../../group-chats.js";
-import { isImageInliningSupported } from "../../../openai.js";
-import { getBase64Async, waitUntilCondition } from "../../../utils.js";
-import { getMultimodalCaption } from "../../shared.js";
+import { callPopup, eventSource, event_types, generateQuietPrompt, getCurrentChatId, is_send_press, saveSettingsDebounced, substituteParams } from '../../../../script.js';
+import { ModuleWorkerWrapper, extension_settings, getContext } from '../../../extensions.js';
+import { is_group_generating } from '../../../group-chats.js';
+import { isImageInliningSupported } from '../../../openai.js';
+import { getBase64Async, waitUntilCondition } from '../../../utils.js';
+import { getMultimodalCaption } from '../../shared.js';
 
-const gameStore = new localforage.createInstance({ name: "SillyTavern_EmulatorJS" });
+const gameStore = new localforage.createInstance({ name: 'SillyTavern_EmulatorJS' });
 const baseUrl = '/scripts/extensions/third-party/SillyTavern-EmulatorJS/plugin.html';
 const docUrl = 'https://github.com/Cohee1207/SillyTavern-EmulatorJS/tree/main/docs/Systems';
 const canvas = new OffscreenCanvas(512, 512);
@@ -17,39 +17,39 @@ let gamesLaunched = 0;
 
 const defaultSettings = {
     commentInterval: 0,
-    captionPrompt: `This is a screenshot of "{{game}}" game played on {{core}}. Provide a detailed description of what is happening in the game.`,
-    commentPrompt: `{{user}} is playing "{{game}}" on {{core}}. Write a {{random:cheeky, snarky, funny, clever, witty, teasing, quirky, sly, saucy}} comment from {{char}}'s perspective based on the following:\n\n{{caption}}`,
+    captionPrompt: 'This is a screenshot of "{{game}}" game played on {{core}}. Provide a detailed description of what is happening in the game.',
+    commentPrompt: '{{user}} is playing "{{game}}" on {{core}}. Write a {{random:cheeky, snarky, funny, clever, witty, teasing, quirky, sly, saucy}} comment from {{char}}\'s perspective based on the following:\n\n{{caption}}',
     forceCaptions: false,
 };
 
 const commentWorker = new ModuleWorkerWrapper(provideComment);
 
 const cores = {
-    "Nintendo 64": "n64",
-    "Nintendo Game Boy / Color": "gb",
-    "Nintendo Game Boy Advance": "gba",
-    "Nintendo DS": "nds",
-    "Nintendo Entertainment System": "nes",
-    "Super Nintendo Entertainment System": "snes",
-    "PlayStation": "psx",
-    "Virtual Boy": "vb",
-    "Sega Mega Drive": "segaMD",
-    "Sega Master System": "segaMS",
-    "Sega CD": "segaCD",
-    "Atari Lynx": "lynx",
-    "Sega 32X": "sega32x",
-    "Atari Jaguar": "jaguar",
-    "Sega Game Gear": "segaGG",
-    "Sega Saturn": "segaSaturn",
-    "Atari 7800": "atari7800",
-    "Atari 2600": "atari2600",
-    "NEC TurboGrafx-16/SuperGrafx/PC Engine": "pce",
-    "NEC PC-FX": "pcfx",
-    "SNK NeoGeo Pocket (Color)": "ngp",
-    "Bandai WonderSwan (Color)": "ws",
-    "ColecoVision": "coleco",
-    "Commodore 64": "vice_x64"
-}
+    'Nintendo 64': 'n64',
+    'Nintendo Game Boy / Color': 'gb',
+    'Nintendo Game Boy Advance': 'gba',
+    'Nintendo DS': 'nds',
+    'Nintendo Entertainment System': 'nes',
+    'Super Nintendo Entertainment System': 'snes',
+    'PlayStation': 'psx',
+    'Virtual Boy': 'vb',
+    'Sega Mega Drive': 'segaMD',
+    'Sega Master System': 'segaMS',
+    'Sega CD': 'segaCD',
+    'Atari Lynx': 'lynx',
+    'Sega 32X': 'sega32x',
+    'Atari Jaguar': 'jaguar',
+    'Sega Game Gear': 'segaGG',
+    'Sega Saturn': 'segaSaturn',
+    'Atari 7800': 'atari7800',
+    'Atari 2600': 'atari2600',
+    'NEC TurboGrafx-16/SuperGrafx/PC Engine': 'pce',
+    'NEC PC-FX': 'pcfx',
+    'SNK NeoGeo Pocket (Color)': 'ngp',
+    'Bandai WonderSwan (Color)': 'ws',
+    'ColecoVision': 'coleco',
+    'Commodore 64': 'vice_x64',
+};
 
 function getAspectRatio(core) {
     switch (core) {
@@ -72,59 +72,59 @@ function getAspectRatio(core) {
 }
 
 function tryGetCore(ext) {
-    if (["fds", "nes", "unif", "unf"].includes(ext))
-        return "nes"
+    if (['fds', 'nes', 'unif', 'unf'].includes(ext))
+        return 'nes';
 
-    if (["smc", "fig", "sfc", "gd3", "gd7", "dx2", "bsx", "swc"].includes(ext))
-        return "snes"
+    if (['smc', 'fig', 'sfc', 'gd3', 'gd7', 'dx2', 'bsx', 'swc'].includes(ext))
+        return 'snes';
 
-    if (["iso", "bin", "chd", "cue", "ccd", "mds", "mdf", "pbp", "cbn", "nrg", "cdi", "gdi", "cue", "cd"].includes(ext))
-        return "psx"
+    if (['iso', 'bin', 'chd', 'cue', 'ccd', 'mds', 'mdf', 'pbp', 'cbn', 'nrg', 'cdi', 'gdi', 'cue', 'cd'].includes(ext))
+        return 'psx';
 
-    if (["gen", "bin", "smd", "md"].includes(ext))
-        return "segaMD"
+    if (['gen', 'bin', 'smd', 'md'].includes(ext))
+        return 'segaMD';
 
-    if (["sms"].includes(ext))
-        return "segaMS"
+    if (['sms'].includes(ext))
+        return 'segaMS';
 
-    if (["vb"].includes(ext))
-        return "vb"
+    if (['vb'].includes(ext))
+        return 'vb';
 
-    if (["lynx", "lnx"].includes(ext))
-        return "lynx"
+    if (['lynx', 'lnx'].includes(ext))
+        return 'lynx';
 
-    if (["32x"].includes(ext))
-        return "sega32x"
+    if (['32x'].includes(ext))
+        return 'sega32x';
 
-    if (["j64", "jag"].includes(ext))
-        return "jaguar"
+    if (['j64', 'jag'].includes(ext))
+        return 'jaguar';
 
-    if (["gg"].includes(ext))
-        return "segaGG"
+    if (['gg'].includes(ext))
+        return 'segaGG';
 
-    if (["gbc"].includes(ext))
-        return "gb"
+    if (['gbc'].includes(ext))
+        return 'gb';
 
-    if (["z64", "n64"].includes(ext))
-        return "n64"
+    if (['z64', 'n64'].includes(ext))
+        return 'n64';
 
-    if (["pce"].includes(ext))
-        return "pce"
+    if (['pce'].includes(ext))
+        return 'pce';
 
-    if (["ngp", "ngc"].includes(ext))
-        return "ngp"
+    if (['ngp', 'ngc'].includes(ext))
+        return 'ngp';
 
-    if (["ws", "wsc"].includes(ext))
-        return "ws"
+    if (['ws', 'wsc'].includes(ext))
+        return 'ws';
 
-    if (["col", "cv"].includes(ext))
-        return "coleco"
+    if (['col', 'cv'].includes(ext))
+        return 'coleco';
 
-    if (["d64"].includes(ext))
-        return "vice_x64"
+    if (['d64'].includes(ext))
+        return 'vice_x64';
 
-    if (["nds", "gba", "gb", "z64", "n64"].includes(ext))
-        return ext
+    if (['nds', 'gba', 'gb', 'z64', 'n64'].includes(ext))
+        return ext;
 }
 
 function getSlug() {
@@ -235,7 +235,7 @@ async function drawGameList() {
         games.push({ id, name, core });
     });
 
-    games.sort((a, b) => { return a.core.localeCompare(b.core) || a.name.localeCompare(b.name) });
+    games.sort((a, b) => { return a.core.localeCompare(b.core) || a.name.localeCompare(b.name); });
 
     const gameList = $('#game_list');
     gameList.empty();
@@ -465,7 +465,7 @@ async function startEmulator(gameId) {
     if (gameId) {
         game = await gameStore.getItem(gameId);
     } else {
-        const popupText = `<div><h3>Select a ROM file:</h3><select id="emulatorjs_game_select" class="wide100p text_pole"></select></div>`;
+        const popupText = '<div><h3>Select a ROM file:</h3><select id="emulatorjs_game_select" class="wide100p text_pole"></select></div>';
         const popupInstance = $(popupText);
 
         const gameSelect = popupInstance.find('#emulatorjs_game_select').on('input change', async () => {
@@ -482,7 +482,7 @@ async function startEmulator(gameId) {
             return;
         }
 
-        games.sort((a, b) => { return a.core.localeCompare(b.core) || a.name.localeCompare(b.name) });
+        games.sort((a, b) => { return a.core.localeCompare(b.core) || a.name.localeCompare(b.name); });
 
         for (const game of games) {
             const option = document.createElement('option');
