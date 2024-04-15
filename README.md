@@ -19,7 +19,7 @@ Cool stuff:
 Limitations:
 
 - AI can't play the game with you as a second player (yet).
-- No built-in ROMs. But you can find them [anywhere](https://archive.org/details/no-intro-2021).
+- No built-in ROMs. But you can find them [anywhere](https://archive.org/details/ni-romsets).
 
 ## NEW! AI Streaming mode
 
