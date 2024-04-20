@@ -218,9 +218,10 @@ async function provideComment(base64Img) {
     };
 
     context.chat.push(message);
-    await eventSource.emit(event_types.MESSAGE_RECEIVED, chatId);
+    const messageId = context.chat.indexOf(message);
+    await eventSource.emit(event_types.MESSAGE_RECEIVED, messageId);
     context.addOneMessage(message);
-    await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chatId);
+    await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, messageId);
 
     await context.saveChat();
 }
