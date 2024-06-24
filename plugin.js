@@ -634,7 +634,8 @@ jQuery(async () => {
         </div>
     </div>`;
 
-    $('#extensions_settings2').append(settings);
+    const getContainer = () => $(document.getElementById('emulatorjs_container') ?? document.getElementById('extensions_settings2'));
+    getContainer().append(settings);
     $('#emulatorjs_add').on('click', function () {
         $('#emulatorjs_file').trigger('click');
     });
