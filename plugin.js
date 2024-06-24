@@ -578,12 +578,16 @@ jQuery(async () => {
     }
 
     const button = $(`
-    <div id="emulatorjs_start" class="list-group-item flex-container flexGap5">
+    <div id="emulatorjs_start" class="list-group-item flex-container flexGap5 interactable" tabindex="0">
         <div class="fa-solid fa-gamepad" title="Start a new game in the emulator"/></div>
         Play EmulatorJS
     </div>`);
 
-    $('#extensionsMenu').append(button);
+    const getWandContainer = () => $(document.getElementById('emulatorjs_wand_container') ?? document.getElementById('extensionsMenu'));
+    const wandContainer = getWandContainer();
+    wandContainer.attr('tabindex', '0');
+    wandContainer.addClass('interactable')
+    wandContainer.append(button);
 
     const settings = `
     <div class="emulatorjs_settings">
