@@ -1,8 +1,9 @@
-import { callPopup, eventSource, event_types, generateQuietPrompt, getCurrentChatId, is_send_press, saveSettingsDebounced, substituteParams } from '../../../../script.js';
+import { eventSource, event_types, generateQuietPrompt, getCurrentChatId, is_send_press, saveSettingsDebounced, substituteParams } from '../../../../script.js';
 import { ModuleWorkerWrapper, extension_settings, getContext } from '../../../extensions.js';
 import { is_group_generating } from '../../../group-chats.js';
 import { isImageInliningSupported } from '../../../openai.js';
 import { getBase64Async, waitUntilCondition } from '../../../utils.js';
+import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
 import { getMultimodalCaption } from '../../shared.js';
 
 const gameStore = new localforage.createInstance({ name: 'SillyTavern_EmulatorJS' });
@@ -312,7 +313,7 @@ async function onGameFileSelect() {
     nameInput.val(name).trigger('input');
     coreSelect.val(core).trigger('change');
 
-    const confirm = await callPopup(popupInstance, 'confirm', '', { okButton: 'Save' });
+    const confirm = await callGenericPopup(popupInstance, POPUP_TYPE.CONFIRM, '', { okButton: 'Save', cancelButton: 'Cancel' });
 
     if (!confirm) {
         return;
@@ -493,7 +494,7 @@ async function startEmulator(gameId) {
         }
 
         gameSelect.trigger('change');
-        const confirm = await callPopup(popupInstance, 'confirm', '', { okButton: 'Launch' });
+        const confirm = await callGenericPopup(popupInstance, POPUP_TYPE.CONFIRM, '', { okButton: 'Launch', cancelButton: 'Cancel' });
 
         if (!confirm) {
             console.log('User canceled the game selection.');
@@ -673,7 +674,7 @@ jQuery(async () => {
     });
     $(document).on('click', '.emulatorjs_delete', async function () {
         const id = $(this).attr('game-id');
-        const confirm = await callPopup('Are you sure you want to delete this game?', 'confirm');
+        const confirm = await callGenericPopup('Are you sure you want to delete this game?', POPUP_TYPE.CONFIRM, '', { okButton: 'Delete', cancelButton: 'Cancel' });
 
         if (!confirm) {
             return;
