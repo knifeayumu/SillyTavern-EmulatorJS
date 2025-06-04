@@ -1,14 +1,16 @@
-import { eventSource, event_types, generateQuietPrompt, getCurrentChatId, is_send_press, saveSettingsDebounced, substituteParams } from '../../../../script.js';
+import { eventSource, event_types, generateQuietPrompt, getCurrentChatId, is_send_press, saveSettingsDebounced, substituteParamsExtended } from '../../../../script.js';
 import { ModuleWorkerWrapper, extension_settings, getContext } from '../../../extensions.js';
 import { is_group_generating } from '../../../group-chats.js';
 import { isImageInliningSupported } from '../../../openai.js';
 import { getBase64Async, waitUntilCondition } from '../../../utils.js';
 import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
 import { getMultimodalCaption } from '../../shared.js';
+import { getMessageTimeStamp } from '../../../RossAscends-mods.js';
+import { localforage, DOMPurify } from '../../../../lib.js';
 
-const gameStore = new localforage.createInstance({ name: 'SillyTavern_EmulatorJS' });
+const gameStore = localforage.createInstance({ name: 'SillyTavern_EmulatorJS' });
 const baseUrl = '/scripts/extensions/third-party/SillyTavern-EmulatorJS/plugin.html';
-const docUrl = 'https://github.com/Cohee1207/SillyTavern-EmulatorJS/tree/main/docs/Systems';
+const docUrl = 'https://emulatorjs.org/docs4devs/cores';
 const canvas = new OffscreenCanvas(512, 512);
 
 let currentGame = '';
@@ -44,12 +46,17 @@ const cores = {
     'Sega Saturn': 'segaSaturn',
     'Atari 7800': 'atari7800',
     'Atari 2600': 'atari2600',
+    'Arcade': 'arcade',
     'NEC TurboGrafx-16/SuperGrafx/PC Engine': 'pce',
     'NEC PC-FX': 'pcfx',
     'SNK NeoGeo Pocket (Color)': 'ngp',
     'Bandai WonderSwan (Color)': 'ws',
     'ColecoVision': 'coleco',
-    'Commodore 64': 'vice_x64',
+    'Commodore 64': 'vice_x64sc',
+    'Commodore 128': 'vice_x128',
+    'Commodore VIC20': 'vice_xvic',
+    'Commodore Plus/4': 'vice_xplus4',
+    'Commodore PET': 'vice_xpet',
 };
 
 function getAspectRatio(core) {
@@ -139,8 +146,7 @@ function getSlug() {
  */
 async function generateCaption(base64Img) {
     const captionPromptTemplate = extension_settings.emulatorjs.captionPrompt || defaultSettings.captionPrompt;
-    const captionPrompt = substituteParams(captionPromptTemplate)
-        .replace('{{game}}', currentGame).replace('{{core}}', currentCore);
+    const captionPrompt = substituteParamsExtended(captionPromptTemplate, { game: currentGame, core: currentCore });
 
     const caption = await getMultimodalCaption(base64Img, captionPrompt);
     return caption;
@@ -163,13 +169,13 @@ async function provideComment(base64Img) {
     if (ttsAudio && ttsAudio instanceof HTMLAudioElement && !ttsAudio.paused) {
         try {
             console.log('provideComment: waiting for TTS audio to finish');
-            await waitUntilCondition(() => ttsAudio.paused, 20000);
+            await waitUntilCondition(() => ttsAudio.paused, 30000);
         } catch {
-            console.log('provideComment: TTS audio did not finish in 20 seconds, giving up');
+            console.log('provideComment: TTS audio did not finish in 30 seconds, giving up');
         }
     }
 
-    const input = substituteParams('{{input}}');
+    const input = substituteParamsExtended('{{input}}');
 
     if (input.length > 0) {
         return console.log('provideComment: user input is not empty, skipping');
@@ -192,10 +198,7 @@ async function provideComment(base64Img) {
     }
 
     const commentPromptTemplate = extension_settings.emulatorjs.commentPrompt || defaultSettings.commentPrompt;
-    const commentPrompt = substituteParams(commentPromptTemplate)
-        .replace(/{{caption}}/i, caption)
-        .replace(/{{core}}/i, currentCore)
-        .replace(/{{game}}/i, currentGame);
+    const commentPrompt = substituteParamsExtended(commentPromptTemplate, { caption: caption, game: currentGame, core: currentCore });
 
     const quietImage = shouldGenerateCaption ? '' : base64Img;
     const commentMessage = await generateQuietPrompt(commentPrompt, true, false, quietImage);
@@ -215,6 +218,7 @@ async function provideComment(base64Img) {
         name: context.name2,
         is_system: false,
         is_user: false,
+        send_date: getMessageTimeStamp(),
         extra: {},
     };
 
@@ -366,7 +370,7 @@ async function setupCommentWorker(frameElement) {
         // Wait for the emulator object and its canvas to be initialized
         await waitUntilCondition(() => frameElement.contentWindow['EJS_emulator']?.canvas, 5000);
         const emulatorObject = frameElement.contentWindow['EJS_emulator'];
-        const emulatorCanvas = emulatorObject?.canvas;
+        const emulatorCanvas = /** @type {HTMLCanvasElement} */ (emulatorObject?.canvas);
 
         if (!emulatorCanvas) {
             throw new Error('Failed to get the emulator canvas.');
@@ -381,7 +385,7 @@ async function setupCommentWorker(frameElement) {
         }
 
         // Create an image capture object
-        const imageCapture = new window['ImageCapture'](videoTrack);
+        const imageCapture = new window.ImageCapture(videoTrack);
         const updateMs = extension_settings.emulatorjs.commentInterval * 1000;
 
         // If the video track is ended, stop the worker
@@ -423,9 +427,14 @@ async function setupCommentWorker(frameElement) {
 
                 // Draw frame to canvas
                 console.debug('provideComment: drawing frame to canvas');
-                canvas.width = bitmap.width;
-                canvas.height = bitmap.height;
+                if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
+                    console.debug(`provideComment: resizing canvas to ${bitmap.width}x${bitmap.height}`);
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                }
                 const context = canvas.getContext('2d');
+                // Ensure the pixels stay crisp
+                context.imageSmoothingEnabled = false;
                 context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
 
                 // Convert to base64 PNG string
@@ -441,13 +450,13 @@ async function setupCommentWorker(frameElement) {
                 // If the video track is ended, stop the worker
                 if (shouldStopWorker()) {
                     clearTimeout(commentTimer);
-                    return console.debug('provideComment: video ended, stopping comment worker.');
+                    console.debug('provideComment: video ended, stopping comment worker.');
+                } else {
+                    // Schedule next update
+                    commentTimer = setTimeout(doUpdate, updateMs);
+                    const nextUpdate = new Date(Date.now() + updateMs).toISOString();
+                    console.log(`provideComment: scheduled next update at ${nextUpdate}`);
                 }
-
-                // Schedule next update
-                commentTimer = setTimeout(doUpdate, updateMs);
-                const nextUpdate = new Date(Date.now() + updateMs).toISOString();
-                console.log(`provideComment: scheduled next update at ${nextUpdate}`);
             }
         };
 
@@ -471,7 +480,7 @@ async function startEmulator(gameId) {
         const popupInstance = $(popupText);
 
         const gameSelect = popupInstance.find('#emulatorjs_game_select').on('input change', async () => {
-            game = await gameStore.getItem(gameSelect.val());
+            game = await gameStore.getItem(gameSelect.val().toString());
         });
 
         const games = [];
@@ -508,8 +517,8 @@ async function startEmulator(gameId) {
     }
 
     const slug = 'emulatorjs-frame-' + getSlug();
-    const context = window['SillyTavern'].getContext();
-    const commentsEnabled = extension_settings.emulatorjs.commentInterval > 0 && !!window['ImageCapture'];
+    const context = getContext();
+    const commentsEnabled = extension_settings.emulatorjs.commentInterval > 0 && !!window.ImageCapture;
     const coreName = getCoreName(game.core);
     context.sendSystemMessage('generic', slug);
 
@@ -587,7 +596,7 @@ jQuery(async () => {
     const getWandContainer = () => $(document.getElementById('emulatorjs_wand_container') ?? document.getElementById('extensionsMenu'));
     const wandContainer = getWandContainer();
     wandContainer.attr('tabindex', '0');
-    wandContainer.addClass('interactable')
+    wandContainer.addClass('interactable');
     wandContainer.append(button);
 
     const settings = `
@@ -602,7 +611,7 @@ jQuery(async () => {
                     <label for="emulatorjs_comment_interval">Comment Interval <small>(in seconds, 0 = disabled)</small></label>
                     <small>
                         Your browser must support <a href="https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility" target="_blank">ImageCapture</a>.
-                        OpenAI / OpenRouter API key with access to a multimodal model (e.g. GPT-4V or Llava) and/or image inlining enabled are required.
+                        A supported Chat Completion model with image inlining enabled or captioning extension with multimodal API chosen is required.
                     </small>
                     <input id="emulatorjs_comment_interval" type="number" class="text_pole wide100p" value="0" min="0" step="10" max="6000" />
                     <label for="emulatorjs_caption_prompt">Caption Prompt</label>
@@ -610,13 +619,13 @@ jQuery(async () => {
                         This prompt is used to generate a description of the image using a multimodal model.
                         If image inlining is supported and captioning is not forced, this prompt is not used.
                         Select your preferred source and model in the "Image Captioning" section of the settings.
-                        You can use <code>{{game}}</code> and <code>{{core}}</code> placeholders here.
+                        You can use <code>{{game}}</code> and <code>{{core}}</code> macros here.
                     </small>
                     <textarea id="emulatorjs_caption_prompt" type="text" class="text_pole textarea_compact wide100p" rows="3">${defaultSettings.captionPrompt}</textarea>
                     <label for="emulatorjs_comment_prompt">Comment Prompt</label>
                     <small>
                         This prompt is used to generate a character's comment.
-                        You can use <code>{{game}}</code>, <code>{{core}}</code> and <code>{{caption}}</code> placeholders.
+                        You can use <code>{{game}}</code>, <code>{{core}}</code> and <code>{{caption}}</code> macros.
                         For image inlining mode, <code>{{caption}}</code> is replaced with <code>see included image</code>.
                     </small>
                     <textarea id="emulatorjs_comment_prompt" type="text" class="text_pole textarea_compact wide100p" rows="4">${defaultSettings.commentPrompt}</textarea>
