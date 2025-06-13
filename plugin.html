@@ -10,7 +10,8 @@
             if (!game?.data) return;
 
             if (game.data instanceof ArrayBuffer) {
-                game.data = new Blob([game.data]);
+                const blob = new Blob([game.data]);
+                game.data = new File([blob], game.name || "game", { type: "application/octet-stream" });
             }
 
             if (game.bios instanceof ArrayBuffer) {
