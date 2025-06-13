@@ -44,9 +44,9 @@
                 if (!window.EJS_emulator || !window.EJS_emulator.settings || !window.EJS_emulator.changeSettingOption) {
                     return;
                 }
-                const saveStateLocation = ['save-state-location'];
-                if (saveStateLocation) {
-                    window.EJS_emulator.changeSettingOption('save-state-location', saveStateLocation);
+                const saveStateLocation = window.EJS_emulator.settings['save-state-location'];
+                if (!saveStateLocation) {
+                    window.EJS_emulator.changeSettingOption('save-state-location', 'browser');
                 }
             }
 
