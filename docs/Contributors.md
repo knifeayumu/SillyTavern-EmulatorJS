@@ -27,7 +27,7 @@
 
 <a href="https://github.com/allancoding" target="_blank">**![Badge Allan GitHub]**</a>
 
-<a href="https://allancoding.is-a.dev/" target="_blank">**![Badge Allan Website]**</a>
+<a href="https://allancoding.dev/" target="_blank">**![Badge Allan Website]**</a>
 
 <br>
 <br>
@@ -68,69 +68,35 @@
 <br>
 <br>
 
-<a href="https://github.com/n-at" target="_blank" title="n-at - Alexey Nurgaliev">![Avatar Alexey]</a>&nbsp;
-<a href="https://github.com/angelmarfil" target="_blank" title="angelmarfil - Angel Marfil">![Avatar angelmarfil]</a>&nbsp;
-<a href="https://github.com/incredibleIdea" target="_blank" title="incredibleIdea">![Avatar incredibleIdea]</a>&nbsp;
-<a href="https://github.com/pastisme" target="_blank" title="pastisme">![Avatar pastisme]</a>&nbsp;
-<a href="https://github.com/gantoine" target="_blank" title="gantoine - Georges-Antoine Assi">![Avatar gantoine]</a>&nbsp;
-<a href="https://github.com/E-Sh4rk" target="_blank" title="E-Sh4rk - Mickaël Laurent" width="95px"><img src="https://github.com/E-Sh4rk.png?size=95" width="95px"></a>&nbsp;
-<a href="https://github.com/Grey41" target="_blank" title="Grey41 - Grey Hope">![Avatar Grey]</a>&nbsp;
-<a href="https://github.com/oyepriyansh" target="_blank" title="oyepriyansh - Priyansh Prajapat">![Avatar Priyansh]</a>&nbsp;
-<a href="https://github.com/andrigamerita" target="_blank" title="andrigamerita">![Avatar andrigamerita]</a>&nbsp;
-<a href="https://github.com/debuggerx01" target="_blank" title="debuggerx01">![Avatar debuggerx01]</a>&nbsp;
-<a href="https://github.com/MattiaPell" target="_blank" title="MattiaPell">![Avatar MattiaPell]</a>&nbsp;
-<a href="https://github.com/TimKieu" target="_blank" title="TimKieu"><img src="https://github.com/TimKieu.png?size=95" width="95px"></a>&nbsp;
-<a href="https://github.com/jonas0b1011001" target="_blank" title="jonas0b1011001">![Avatar jonas0b1011001]</a>&nbsp;
-<a href="https://github.com/IvanMazzoli" target="_blank" title="IvanMazzoli">![Avatar IvanMazzoli]</a>&nbsp;
-<a href="https://github.com/iGoodie" target="_blank" title="iGoodie - Anılcan Metinyurt">![Avatar iGoodie]</a>&nbsp;
-<a href="https://github.com/eric183" target="_blank" title="eric183 - ericKuang">![Avatar ericKuang]</a>&nbsp;
-<a href="https://github.com/ZhaoTonggang" target="_blank" title="ZhaoTonggang - 赵彤刚">![Avatar ZhaoTonggang]</a>&nbsp;
-<a href="https://github.com/Protektor-Desura" target="_blank" title="Protektor-Desura - Protektor">![Avatar Protektor]</a>&nbsp;
-<a href="https://github.com/cheesykyle" target="_blank" title="CheesyKyle - Kyle Steffel">![Avatar Kyle]</a>&nbsp;
-<a href="https://github.com/imneckro" target="_blank" title="ImNekro - ck-oneman">![Avatar Nekro]</a>&nbsp;
-</div>
+<!-- Others -->
+<a href="https://github.com/n-at" target="_blank" title="n-at - Contributions: 40" alt="n-at"><img src="https://avatars.githubusercontent.com/u/2185280?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/gantoine" target="_blank" title="gantoine - Contributions: 4" alt="gantoine"><img src="https://avatars.githubusercontent.com/u/3247106?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/angelmarfil" target="_blank" title="angelmarfil - Contributions: 3" alt="angelmarfil"><img src="https://avatars.githubusercontent.com/u/59626670?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/E-Sh4rk" target="_blank" title="E-Sh4rk - Contributions: 2" alt="E-Sh4rk"><img src="https://avatars.githubusercontent.com/u/13153243?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/incredibleIdea" target="_blank" title="incredibleIdea - Contributions: 2" alt="incredibleIdea"><img src="https://avatars.githubusercontent.com/u/23035551?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/pastisme" target="_blank" title="pastisme - Contributions: 2" alt="pastisme"><img src="https://avatars.githubusercontent.com/u/166672781?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/Grey41" target="_blank" title="Grey41 - Contributions: 2" alt="Grey41"><img src="https://avatars.githubusercontent.com/u/85015029?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/ZhaoTonggang" target="_blank" title="ZhaoTonggang - Contributions: 1" alt="ZhaoTonggang"><img src="https://avatars.githubusercontent.com/u/81669862?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/t3chnob0y" target="_blank" title="t3chnob0y - Contributions: 1" alt="t3chnob0y"><img src="https://avatars.githubusercontent.com/u/18381004?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/pjft" target="_blank" title="pjft - Contributions: 1" alt="pjft"><img src="https://avatars.githubusercontent.com/u/22025709?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/noel-forester" target="_blank" title="noel-forester - Contributions: 1" alt="noel-forester"><img src="https://avatars.githubusercontent.com/u/62397558?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/jonas0b1011001" target="_blank" title="jonas0b1011001 - Contributions: 1" alt="jonas0b1011001"><img src="https://avatars.githubusercontent.com/u/43352574?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/debuggerx01" target="_blank" title="debuggerx01 - Contributions: 1" alt="debuggerx01"><img src="https://avatars.githubusercontent.com/u/19624835?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/andrigamerita" target="_blank" title="andrigamerita - Contributions: 1" alt="andrigamerita"><img src="https://avatars.githubusercontent.com/u/37557992?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/TimKieu" target="_blank" title="TimKieu - Contributions: 1" alt="TimKieu"><img src="https://avatars.githubusercontent.com/u/90356683?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/iits-reza" target="_blank" title="iits-reza - Contributions: 1" alt="iits-reza"><img src="https://avatars.githubusercontent.com/u/56708670?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/oyepriyansh" target="_blank" title="oyepriyansh - Contributions: 1" alt="oyepriyansh"><img src="https://avatars.githubusercontent.com/u/83062406?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/MattiaPell" target="_blank" title="MattiaPell - Contributions: 1" alt="MattiaPell"><img src="https://avatars.githubusercontent.com/u/47603639?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/kellenmace" target="_blank" title="kellenmace - Contributions: 1" alt="kellenmace"><img src="https://avatars.githubusercontent.com/u/5306336?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/IvanMazzoli" target="_blank" title="IvanMazzoli - Contributions: 1" alt="IvanMazzoli"><img src="https://avatars.githubusercontent.com/u/7896815?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/iGoodie" target="_blank" title="iGoodie - Contributions: 1" alt="iGoodie"><img src="https://avatars.githubusercontent.com/u/8591785?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/jurcaalexandrucristian" target="_blank" title="jurcaalexandrucristian - Contributions: 1" alt="jurcaalexandrucristian"><img src="https://avatars.githubusercontent.com/u/74395896?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/eric183" target="_blank" title="eric183 - Contributions: 1" alt="eric183"><img src="https://avatars.githubusercontent.com/u/10773980?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/Protektor-Desura" target="_blank" title="Protektor-Desura - Contributions: 1" alt="Protektor-Desura"><img src="https://avatars.githubusercontent.com/u/1195496?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/cheesykyle" target="_blank" title="cheesykyle - Contributions: 1" alt="cheesykyle"><img src="https://avatars.githubusercontent.com/u/17484761?v=4&size=95" width="95px"></a>&nbsp;
+<a href="https://github.com/imneckro" target="_blank" title="imneckro - Contributions: 1" alt="imneckro"><img src="https://avatars.githubusercontent.com/u/42493772?v=4&size=95" width="95px"></a>&nbsp;
 
-
-<!------------------------------------------------------------------------------>
-
-[Avatar Nekro]: https://github.com/imneckro.png?size=95
-
-[Avatar Grey]: https://github.com/Grey41.png?size=95
-
-[Avatar Kyle]: https://github.com/cheesykyle.png?size=95
-
-[Avatar Protektor]: https://github.com/Protektor-Desura.png?size=95
-
-[Avatar ericKuang]: https://github.com/eric183.png?size=95
-
-[Avatar incredibleIdea]: https://github.com/incredibleIdea.png?size=95
-
-[Avatar Alexey]: https://github.com/n-at.png?size=95
-
-[Avatar Mickaël]: https://github.com/E-Sh4rk.png?size=95 
-
-[Avatar andrigamerita]: https://github.com/andrigamerita.png?size=95
-
-[Avatar Priyansh]: https://github.com/oyepriyansh.png?size=95
-
-[Avatar debuggerx01]: https://github.com/debuggerx01.png?size=95
-
-[Avatar gantoine]: https://github.com/gantoine.png?size=95
-
-[Avatar angelmarfil]: https://github.com/angelmarfil.png?size=95
-
-[Avatar MattiaPell]: https://github.com/MattiaPell.png?size=95
-
-[Avatar jonas0b1011001]: https://github.com/jonas0b1011001.png?size=95
-
-[Avatar IvanMazzoli]: https://github.com/IvanMazzoli.png?size=95
-
-[Avatar iGoodie]: https://github.com/iGoodie.png?size=95
-
-[Avatar ZhaoTonggang]: https://github.com/ZhaoTonggang.png?size=95
-
-[Avatar pastisme]: https://github.com/pastisme.png?size=95
-
+<!-- Others End -->
 
 <!----------------------------------{ Ethan }----------------------------------->
 [Badge Ethan GitHub]: https://img.shields.io/badge/Ethan_O'_Brien-181717.svg?style=for-the-badge&logo=GitHub&logoColor=white
@@ -144,7 +110,7 @@
 
 <!----------------------------------{ Allan }---------------------------------->
 [Badge Allan GitHub]: https://img.shields.io/badge/allancoding-181717.svg?style=for-the-badge&logo=GitHub&logoColor=white
-[Badge Allan Website]: https://img.shields.io/badge/allancoding.is–a.dev-lightgray.svg?style=for-the-badge&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAATCAYAAACKsM07AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALJSURBVEhLtZVNSFRRGIbfc2emctLUimmV4KIWBbNpUf4lZAYRBBH0syioTZA/1cKKcVGkbqQkCKJNGRlRVLpwMSiWlakhakaaWv7kIFqZVKhDznjv13vGASWTGdCel4d75zuHc+6ZOeeODdGjaAF101ZdiIZoJ9CDn6M+6qDbaDuNiBG+RiKPjg4C1Z1ABe/1g53QDZGIZoIc+pODV1lKVTmVul8P3GZtNT2mOyyFU/QkB181oFT1gGGItl+pB5zEzrZ8ekR3XAz93XqU0pcFbKBptHI7kJmh1J5QNUydSHUH8Ia3egIv/aXr8xERqKKiIsnP1w+y/HBsoLS0lBP9Hzwej9iys7MvB1MDaJJGeMWLFJWKErMYKUYqcs3TSFCJeCQP0SFv4UQMcq0cDDPXrTIEGI95EVvUVtyVO6ixatAoDaiQexhkpur9s7uo1qpFuVWOdmlDkOlHH3ziwxPrMSqtpygzr2JIhjAogzikDiOByVK78VyewWTOmnnolm7csm7iPaPHWMFoQiv4kTIOUQKdFmlBl3TiA7qwSW3Gd4whQ2XCpVxYyejV+Jg+fIKL6WWu2IoxKl/gVm5uLTt6pAfjzLr69VD6Nygo0G+AOV6+8CMYFPj9FpKSHPD5gtwRbKDpO5143eAPtcXFGpgOCPsCu7KccLn0zp2jsLAQ9kAggImJiXBplslJP9rbfmNkJIi0dCeGPgcxPDyD+HgDlsTgXcc0vn2dgV2/NIhp8gXlTkRMTLgQRo+tHA7HNRouzcFN4LIsy22z2eoyLSs1WWRHuClEr2G8alaq1TTNvYZhNPEsLTgHQb20CJynB/j+ie0zjIZ5J9nLmv4Vj1N92hfln0f4Lzy06yNQbzcML5c2pUT2JwMHWV9Lb+hOS6WQ7hsD4vhH4OT9UXpGN0QimhVodL9LtJmuoRtpGV1W9CQl9ELoU1QAfwCDI3HISCyhigAAAABJRU5ErkJggg==
+[Badge Allan Website]: https://img.shields.io/badge/allancoding.dev-lightgray.svg?style=for-the-badge&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAATCAYAAACKsM07AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALJSURBVEhLtZVNSFRRGIbfc2emctLUimmV4KIWBbNpUf4lZAYRBBH0syioTZA/1cKKcVGkbqQkCKJNGRlRVLpwMSiWlakhakaaWv7kIFqZVKhDznjv13vGASWTGdCel4d75zuHc+6ZOeeODdGjaAF101ZdiIZoJ9CDn6M+6qDbaDuNiBG+RiKPjg4C1Z1ABe/1g53QDZGIZoIc+pODV1lKVTmVul8P3GZtNT2mOyyFU/QkB181oFT1gGGItl+pB5zEzrZ8ekR3XAz93XqU0pcFbKBptHI7kJmh1J5QNUydSHUH8Ia3egIv/aXr8xERqKKiIsnP1w+y/HBsoLS0lBP9Hzwej9iys7MvB1MDaJJGeMWLFJWKErMYKUYqcs3TSFCJeCQP0SFv4UQMcq0cDDPXrTIEGI95EVvUVtyVO6ixatAoDaiQexhkpur9s7uo1qpFuVWOdmlDkOlHH3ziwxPrMSqtpygzr2JIhjAogzikDiOByVK78VyewWTOmnnolm7csm7iPaPHWMFoQiv4kTIOUQKdFmlBl3TiA7qwSW3Gd4whQ2XCpVxYyejV+Jg+fIKL6WWu2IoxKl/gVm5uLTt6pAfjzLr69VD6Nygo0G+AOV6+8CMYFPj9FpKSHPD5gtwRbKDpO5143eAPtcXFGpgOCPsCu7KccLn0zp2jsLAQ9kAggImJiXBplslJP9rbfmNkJIi0dCeGPgcxPDyD+HgDlsTgXcc0vn2dgV2/NIhp8gXlTkRMTLgQRo+tHA7HNRouzcFN4LIsy22z2eoyLSs1WWRHuClEr2G8alaq1TTNvYZhNPEsLTgHQb20CJynB/j+ie0zjIZ5J9nLmv4Vj1N92hfln0f4Lzy06yNQbzcML5c2pUT2JwMHWV9Lb+hOS6WQ7hsD4vhH4OT9UXpGN0QimhVodL9LtJmuoRtpGV1W9CQl9ELoU1QAfwCDI3HISCyhigAAAABJRU5ErkJggg==
 [Allan Avatar]: https://avatars.githubusercontent.com/u/74841470?s=90 'Allancoding - Allan Niles'
 
 <!----------------------------------{ BinBashBanana }---------------------------------->

@@ -10,8 +10,7 @@
             if (!game?.data) return;
 
             if (game.data instanceof ArrayBuffer) {
-                const blob = new Blob([game.data]);
-                game.data = new File([blob], game.name || "game", { type: "application/octet-stream" });
+                game.data = new Blob([game.data]);
             }
 
             if (game.bios instanceof ArrayBuffer) {
@@ -39,17 +38,6 @@
                 'save-state-location': 'browser',
             };
             // window.EJS_DEBUG_XX = true;
-
-            // Workaround for not loading the settings on game start. Will be fixed in the next EJS release.
-            window.EJS_onGameStart = function(e) {
-                if (!window.EJS_emulator || !window.EJS_emulator.settings || !window.EJS_emulator.changeSettingOption) {
-                    return;
-                }
-                const saveStateLocation = window.EJS_emulator.settings['save-state-location'];
-                if (!saveStateLocation) {
-                    window.EJS_emulator.changeSettingOption('save-state-location', 'browser');
-                }
-            }
 
             const script = document.createElement("script");
             script.src = "data/loader.js";
